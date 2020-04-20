@@ -1,4 +1,4 @@
-package pl.jutupe
+package pl.jutupe.ktor_rabbitmq
 
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.ConnectionFactory

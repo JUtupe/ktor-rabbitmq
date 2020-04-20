@@ -1,4 +1,4 @@
-package pl.jutupe
+package pl.jutupe.ktor_rabbitmq
 
 import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.DeliverCallback

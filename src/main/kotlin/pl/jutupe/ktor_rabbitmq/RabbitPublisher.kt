@@ -1,4 +1,4 @@
-package pl.jutupe
+package pl.jutupe.ktor_rabbitmq
 
 import com.rabbitmq.client.AMQP
 import io.ktor.application.ApplicationCall
