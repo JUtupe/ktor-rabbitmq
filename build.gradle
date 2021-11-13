@@ -1,23 +1,40 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
+    id "org.jetbrains.kotlin.jvm" version "1.5.31"
 }
 
-group 'pl.jutupe'
-version '0.2.1'
+group "pl.jutupe"
+version "0.2.1"
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31"
 
-    //ktor
+    // ktor
     implementation "io.ktor:ktor-server-core:$ktor_version"
 
-    //rabbitmq
+    // rabbitmq
     implementation "com.rabbitmq:amqp-client:$rabbitmq_version"
+
+    // tests
+    testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
+    testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
+    testImplementation "io.mockk:mockk:$mockk_version"
+
+    testImplementation "org.testcontainers:rabbitmq:$testcontainers_version"
+    testImplementation "org.testcontainers:testcontainers:$testcontainers_version"
+    testImplementation "org.testcontainers:junit-jupiter:$testcontainers_version"
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 compileKotlin {
