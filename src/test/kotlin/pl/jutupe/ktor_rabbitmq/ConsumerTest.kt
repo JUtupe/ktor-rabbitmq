@@ -48,7 +48,7 @@ class ConsumerTest : IntegrationTest() {
             }
 
             // then
-            verify { consumer.invoke(any(), eq(body), any(), any())}
+            verify { consumer.invoke(any(), eq(body), any(), any()) }
         }
     }
 }

@@ -6,7 +6,6 @@ import com.rabbitmq.client.Envelope
 import com.rabbitmq.client.MessageProperties
 import io.ktor.application.*
 import io.ktor.server.testing.*
-import io.mockk.verify
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -79,7 +78,7 @@ class WorkQueueTest : IntegrationTest() {
                 basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task6", 1))
             }
 
-            Thread.sleep(1000);
+            Thread.sleep(1000)
 
             expectThat(consumer1.consumedTasks.size).isEqualTo(2)
             expectThat(consumer2.consumedTasks.size).isEqualTo(2)
