@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
     testImplementation "io.mockk:mockk:$mockk_version"
+    testImplementation("io.strikt:strikt-jvm:0.32.0")
 
     testImplementation "org.testcontainers:rabbitmq:$testcontainers_version"
     testImplementation "org.testcontainers:testcontainers:$testcontainers_version"

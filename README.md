@@ -35,10 +35,18 @@ install(RabbitMQ) {
       }
     }
     
-    //consume example
+    //consume with autoack example
     rabbitConsumer {
-      consume<MyObject>("queue") { consumerTag, body ->
-         println("Consumed message $body, consumer tag: $consumerTag")
+      consume<MyObject>("queue") { consumerTag, body, _channel, _envelope ->
+        println("Consumed message $body, consumer tag: $consumerTag")
+      }
+    }
+
+    //consume work queue with manual ack example
+    rabbitConsumer {
+      consume<MyObject>("work_queue") { consumerTag, body, channel, envelope ->
+        println("Consumed task $body, consumer tag: $consumerTag")
+        channel.basicAck(envelope.deliveryTag, false)
       }
     }
 ```
