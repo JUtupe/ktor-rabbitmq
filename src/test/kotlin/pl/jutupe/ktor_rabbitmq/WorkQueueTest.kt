@@ -1,25 +1,24 @@
 package pl.jutupe.ktor_rabbitmq
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.rabbitmq.client.Channel
-import com.rabbitmq.client.Envelope
 import com.rabbitmq.client.MessageProperties
 import io.ktor.application.*
 import io.ktor.server.testing.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotEqualTo
 
 data class TestTask(val key: String, val delay: Long)
 
-class Consumer {
-    val consumedTasks = HashSet<String>()
+class TestConsumer {
+    val consumedTasks = mutableListOf<String>()
 
-    fun consume(task: TestTask, channel: Channel, envelope: Envelope) {
+    fun consume(task: TestTask, consumer: ConsumerScope) {
         consumedTasks.add(task.key)
+
         Thread.sleep(100 * task.delay)
-        channel.basicAck(envelope.deliveryTag, false)
+
+        consumer.ack()
     }
 }
 
@@ -41,63 +40,68 @@ private fun Application.testModule(host: String, port: Int) {
 
 class WorkQueueTest : IntegrationTest() {
 
-    fun getPayload(key: String, delay: Long): ByteArray {
-        val body = TestTask(key, delay)
-        return jacksonObjectMapper().writeValueAsBytes(body)
-    }
-
     @Test
     fun `should consume task when published`() {
-        val consumer1 = Consumer()
-        val consumer2 = Consumer()
-        val consumer3 = Consumer()
-        val consume1 = { consumerTag: String, body: TestTask, channel: Channel, envelope: Envelope -> consumer1.consume(body, channel, envelope) }
-        val consume2 = { consumerTag: String, body: TestTask, channel: Channel, envelope: Envelope -> consumer2.consume(body, channel, envelope) }
-        val consume3 = { consumerTag: String, body: TestTask, channel: Channel, envelope: Envelope -> consumer3.consume(body, channel, envelope) }
+        // given
+        val consumer1 = TestConsumer()
+        val consumer2 = TestConsumer()
+        val consumer3 = TestConsumer()
 
         withTestApplication({
             testModule(rabbit.host, rabbit.amqpPort)
 
             rabbitConsumer {
-                consume("workQueue", false, consume1, 1)
-            }
-            rabbitConsumer {
-                consume("workQueue", false, consume2, 1)
-            }
-            rabbitConsumer {
-                consume("workQueue", false, consume3, 1)
+                consume<TestTask>("workQueue", false, 1) { body ->
+                    consumer1.consume(body, this)
+                }
+
+                consume<TestTask>("workQueue", false, 1) { body ->
+                    consumer2.consume(body, this)
+                }
+
+                consume<TestTask>("workQueue", false, 1) { body ->
+                    consumer3.consume(body, this)
+                }
             }
         }) {
             // when
             withChannel {
-                basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task1", 1))
-                basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task2", 1))
-                basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task3", 1))
-                basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task4", 1))
-                basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task5", 1))
-                basicPublish("exchange", "routingKey", MessageProperties.PERSISTENT_TEXT_PLAIN, getPayload("Task6", 1))
+                repeat(times = 6) { index ->
+                    basicPublish(
+                        "exchange",
+                        "routingKey",
+                        MessageProperties.PERSISTENT_TEXT_PLAIN,
+                        getPayload("Task${index}")
+                    )
+                }
             }
-
-            Thread.sleep(1000)
-
-            expectThat(consumer1.consumedTasks.size).isEqualTo(2)
-            expectThat(consumer2.consumedTasks.size).isEqualTo(2)
-            expectThat(consumer3.consumedTasks.size).isEqualTo(2)
-            val task1 = consumer1.consumedTasks.toArray()[0]
-            val task2 = consumer2.consumedTasks.toArray()[0]
-            val task3 = consumer3.consumedTasks.toArray()[0]
-            val task1a = consumer1.consumedTasks.toArray()[1]
-            val task2a = consumer2.consumedTasks.toArray()[1]
-            val task3a = consumer3.consumedTasks.toArray()[1]
-            expectThat(task1).isNotEqualTo(task1a)
-            expectThat(task2).isNotEqualTo(task2a)
-            expectThat(task3).isNotEqualTo(task3a)
-            expectThat(task1).isNotEqualTo(task2)
-            expectThat(task1).isNotEqualTo(task3)
-            expectThat(task2).isNotEqualTo(task3)
-            expectThat(task1a).isNotEqualTo(task2a)
-            expectThat(task1a).isNotEqualTo(task3a)
-            expectThat(task2a).isNotEqualTo(task3a)
         }
+
+        Thread.sleep(1000)
+
+        assertEquals(2, consumer1.consumedTasks.size)
+        assertEquals(2, consumer2.consumedTasks.size)
+        assertEquals(2, consumer3.consumedTasks.size)
+
+        val task1 = consumer1.consumedTasks[0]
+        val task2 = consumer2.consumedTasks[0]
+        val task3 = consumer3.consumedTasks[0]
+        val task1a = consumer1.consumedTasks[1]
+        val task2a = consumer2.consumedTasks[1]
+        val task3a = consumer3.consumedTasks[1]
+        assertNotEquals(task1, task1a)
+        assertNotEquals(task2, task2a)
+        assertNotEquals(task3, task3a)
+        assertNotEquals(task1, task2)
+        assertNotEquals(task1, task3)
+        assertNotEquals(task2, task3)
+        assertNotEquals(task1a, task2a)
+        assertNotEquals(task1a, task3a)
+        assertNotEquals(task2a, task3a)
+    }
+
+    private fun getPayload(key: String, delay: Long = 1L): ByteArray {
+        val body = TestTask(key, delay)
+        return jacksonObjectMapper().writeValueAsBytes(body)
     }
 }

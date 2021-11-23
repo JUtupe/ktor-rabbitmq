@@ -1,8 +1,6 @@
 package pl.jutupe.ktor_rabbitmq
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.rabbitmq.client.Channel
-import com.rabbitmq.client.Envelope
 import io.ktor.application.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
@@ -25,17 +23,17 @@ private fun Application.testModule(host: String, port: Int) {
     }
 }
 
-class ConsumerTest : IntegrationTest() {
+class TestConsumerTest : IntegrationTest() {
 
     @Test
     fun `should consume message when published`() {
-        val consumer = mockk<(String, TestObject, Channel, Envelope) -> Unit>()
+        val consumer = mockk<ConsumerScope.(TestObject) -> Unit>()
 
         withTestApplication({
             testModule(rabbit.host, rabbit.amqpPort)
 
             rabbitConsumer {
-                consume("queue", true, consumer)
+                consume("queue", true, rabbitDeliverCallback = consumer)
             }
         }) {
             // given
@@ -48,7 +46,7 @@ class ConsumerTest : IntegrationTest() {
             }
 
             // then
-            verify { consumer.invoke(any(), eq(body), any(), any()) }
+            verify { consumer.invoke(any(), eq(body)) }
         }
     }
 }
