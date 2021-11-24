@@ -46,7 +46,9 @@ rabbitConsumer {
 rabbitConsumer {
     consume<MyObject>("work_queue") { body ->
         println("Consumed task $body")
-        ack(multiple = false)
+        
+        // We can omit 'this' part
+        this.ack(multiple = false)
     }
 }
 ```
