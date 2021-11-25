@@ -3,6 +3,18 @@ plugins {
     id "maven-publish"
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'pl.jutupe'
+            artifactId = 'ktor_rabbitmq'
+            version = '0.2.1'
+
+            from components.java
+        }
+    }
+}
+
 group "pl.jutupe"
 version "0.2.2"
 
