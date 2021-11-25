@@ -8,7 +8,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'pl.jutupe'
             artifactId = 'ktor_rabbitmq'
-            version = '0.2.1'
+            version = '0.2.3'
 
             from components.java
         }
@@ -16,7 +16,7 @@ publishing {
 }
 
 group "pl.jutupe"
-version "0.2.2"
+version "0.2.3"
 
 repositories {
     mavenCentral()
