@@ -1,7 +1,6 @@
 package pl.jutupe.ktor_rabbitmq
 
-import com.rabbitmq.client.CancelCallback
-import com.rabbitmq.client.DeliverCallback
+import com.rabbitmq.client.*
 import io.ktor.application.Application
 import io.ktor.application.feature
 import io.ktor.util.pipeline.ContextDsl
@@ -14,17 +13,24 @@ fun Application.rabbitConsumer(configuration: RabbitMQ.() -> Unit): RabbitMQ =
 inline fun <reified T> RabbitMQ.consume(
     queue: String,
     autoAck: Boolean = true,
-    crossinline rabbitDeliverCallback: (consumerTag: String, body: T) -> Unit
+    basicQos: Int? = null,
+    crossinline rabbitDeliverCallback: ConsumerScope.(body: T) -> Unit,
 ) {
     withChannel {
+        basicQos?.let { this.basicQos(it) }
         basicConsume(
             queue,
             autoAck,
-            DeliverCallback { consumerTag, message ->
+            DeliverCallback { _, message ->
                 runCatching {
                     val mappedEntity = deserialize<T>(message.body)
 
-                    rabbitDeliverCallback.invoke(consumerTag, mappedEntity)
+                    val scope = ConsumerScope(
+                        channel = this,
+                        message = message
+                    )
+
+                    rabbitDeliverCallback.invoke(scope, mappedEntity)
                 }.getOrElse {
                     it.printStackTrace()
                 }
@@ -33,5 +39,23 @@ inline fun <reified T> RabbitMQ.consume(
                 println("Consume cancelled: $it")
             }
         )
+    }
+}
+
+class ConsumerScope(
+    private val channel: Channel,
+    private val message: Delivery,
+) {
+
+    fun ack(multiple: Boolean = false) {
+        channel.basicAck(message.envelope.deliveryTag, multiple)
+    }
+
+    fun nack(multiple: Boolean = false, requeue: Boolean = false) {
+        channel.basicNack(message.envelope.deliveryTag, multiple, requeue)
+    }
+
+    fun reject(requeue: Boolean = false) {
+        channel.basicReject(message.envelope.deliveryTag, requeue)
     }
 }

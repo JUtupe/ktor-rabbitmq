@@ -23,17 +23,17 @@ private fun Application.testModule(host: String, port: Int) {
     }
 }
 
-class ConsumerTest : IntegrationTest() {
+class TestConsumerTest : IntegrationTest() {
 
     @Test
     fun `should consume message when published`() {
-        val consumer = mockk<(String, TestObject) -> Unit>()
+        val consumer = mockk<ConsumerScope.(TestObject) -> Unit>()
 
         withTestApplication({
             testModule(rabbit.host, rabbit.amqpPort)
 
             rabbitConsumer {
-                consume("queue", true, consumer)
+                consume("queue", true, rabbitDeliverCallback = consumer)
             }
         }) {
             // given
@@ -46,7 +46,7 @@ class ConsumerTest : IntegrationTest() {
             }
 
             // then
-            verify { consumer.invoke(any(), eq(body))}
+            verify { consumer.invoke(any(), eq(body)) }
         }
     }
 }
