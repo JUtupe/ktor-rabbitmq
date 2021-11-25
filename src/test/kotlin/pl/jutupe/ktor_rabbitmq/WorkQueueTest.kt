@@ -2,8 +2,9 @@ package pl.jutupe.ktor_rabbitmq
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.rabbitmq.client.MessageProperties
-import io.ktor.application.*
-import io.ktor.server.testing.*
+import io.ktor.application.Application
+import io.ktor.application.install
+import io.ktor.server.testing.withTestApplication
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -71,7 +72,7 @@ class WorkQueueTest : IntegrationTest() {
                         "exchange",
                         "routingKey",
                         MessageProperties.PERSISTENT_TEXT_PLAIN,
-                        getPayload("Task${index}")
+                        getPayload("Task$index")
                     )
                 }
             }
