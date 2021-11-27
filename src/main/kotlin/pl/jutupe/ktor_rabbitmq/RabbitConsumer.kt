@@ -34,8 +34,8 @@ inline fun <reified T> RabbitMQ.consume(
                 }.getOrElse { throwable ->
                     logger?.error(
                         "DeliverCallback error: (" +
-                                "messageId = ${message.properties.messageId}, " +
-                                "consumerTag = $consumerTag)",
+                            "messageId = ${message.properties.messageId}, " +
+                            "consumerTag = $consumerTag)",
                         throwable,
                     )
                 }
