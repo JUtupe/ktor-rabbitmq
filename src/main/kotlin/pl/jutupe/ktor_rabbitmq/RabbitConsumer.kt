@@ -21,7 +21,7 @@ inline fun <reified T> RabbitMQ.consume(
         basicConsume(
             queue,
             autoAck,
-            DeliverCallback { _, message ->
+            { consumerTag, message ->
                 runCatching {
                     val mappedEntity = deserialize<T>(message.body)
 
@@ -31,12 +31,17 @@ inline fun <reified T> RabbitMQ.consume(
                     )
 
                     rabbitDeliverCallback.invoke(scope, mappedEntity)
-                }.getOrElse {
-                    it.printStackTrace()
+                }.getOrElse { throwable ->
+                    logger?.error(
+                        "DeliverCallback error: (" +
+                                "messageId = ${message.properties.messageId}, " +
+                                "consumerTag = $consumerTag)",
+                        throwable,
+                    )
                 }
             },
-            CancelCallback {
-                println("Consume cancelled: $it")
+            { consumerTag ->
+                logger?.error("Consume cancelled: (consumerTag = $consumerTag)")
             }
         )
     }

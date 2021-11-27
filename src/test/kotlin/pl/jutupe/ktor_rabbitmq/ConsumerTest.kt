@@ -6,11 +6,14 @@ import io.ktor.server.testing.*
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import org.slf4j.Logger
 
 private fun Application.testModule(host: String, port: Int) {
     install(RabbitMQ) {
         uri = "amqp://guest:guest@$host:$port"
         connectionName = "Connection name"
+
+        enableLogging()
 
         serialize { jacksonObjectMapper().writeValueAsBytes(it) }
         deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
@@ -23,7 +26,7 @@ private fun Application.testModule(host: String, port: Int) {
     }
 }
 
-class TestConsumerTest : IntegrationTest() {
+class ConsumerTest : IntegrationTest() {
 
     @Test
     fun `should consume message when published`() {
@@ -47,6 +50,37 @@ class TestConsumerTest : IntegrationTest() {
 
             // then
             verify { consumer.invoke(any(), eq(body)) }
+        }
+    }
+
+    @Test
+    fun `should log error when invalid body published`() {
+        val consumer = mockk<ConsumerScope.(TestObject) -> Unit>()
+        val logger = mockk<Logger>(relaxUnitFun = true)
+
+        withApplication(
+            createTestEnvironment { this.log = logger }
+        ) {
+            // given
+            application.apply {
+                testModule(rabbit.host, rabbit.amqpPort)
+
+                rabbitConsumer {
+                    consume("queue", true, rabbitDeliverCallback = consumer)
+                }
+            }
+
+            val body = AnotherTestObject(string = "string", int = 1234)
+            val convertedBody = jacksonObjectMapper().writeValueAsBytes(body)
+
+            // when
+            withChannel {
+                basicPublish("exchange", "routingKey", null, convertedBody)
+            }
+
+            // then
+            verify { logger.error(any(), any<Throwable>()) }
+            verify(exactly = 0) { consumer.invoke(any(), any()) }
         }
     }
 }
