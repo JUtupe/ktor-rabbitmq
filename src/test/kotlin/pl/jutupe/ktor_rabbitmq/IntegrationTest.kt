@@ -45,4 +45,6 @@ open class IntegrationTest {
     }
 
     data class TestObject(val key: String)
+
+    data class AnotherTestObject(val string: String, val int: Int)
 }

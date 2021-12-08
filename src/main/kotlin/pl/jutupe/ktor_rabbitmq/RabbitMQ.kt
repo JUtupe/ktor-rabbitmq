@@ -1,22 +1,25 @@
 package pl.jutupe.ktor_rabbitmq
 
 import com.rabbitmq.client.Channel
+import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
 import io.ktor.application.Application
 import io.ktor.application.ApplicationFeature
 import io.ktor.util.AttributeKey
+import org.slf4j.Logger
 
 class RabbitMQ(
     val configuration: RabbitMQConfiguration
 ) {
 
+    val logger: Logger? = configuration.logger
+
     private val connectionFactory =
         ConnectionFactory().apply {
             setUri(configuration.uri)
         }
-
-    private val connection = connectionFactory.newConnection(configuration.connectionName)
-    private val channel = connection.createChannel()
+    private val connection: Connection = connectionFactory.newConnection(configuration.connectionName)
+    private val channel: Channel = connection.createChannel()
 
     private fun initialize() {
         configuration.initializeBlock.invoke(channel)
@@ -52,7 +55,9 @@ class RabbitMQ(
 
             pipeline.attributes.put(key, rabbit)
 
-            return rabbit
+            return rabbit.apply {
+                logger?.info("RabbitMQ initialized")
+            }
         }
     }
 }
