@@ -102,6 +102,13 @@ class ShutdownTest : IntegrationTest() {
             logger.info("acked")
         }
 
+        /*
+        Expected output:
+
+        Listing queues for vhost / ...
+        name	messages_unacknowledged
+        queue	1
+        */
         val output = rabbit.execInContainer("rabbitmqctl", "list_queues", "name", "messages_unacknowledged").stdout
         assertTrue(output.endsWith("queue\t1\n"))
     }
