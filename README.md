@@ -44,7 +44,7 @@ rabbitConsumer {
 
 //consume work queue with manual ack example
 rabbitConsumer {
-    consume<MyObject>("work_queue") { body ->
+    consume<MyObject>("work_queue", false, 1) { body ->
         println("Consumed task $body")
         
         // We can omit 'this' part
