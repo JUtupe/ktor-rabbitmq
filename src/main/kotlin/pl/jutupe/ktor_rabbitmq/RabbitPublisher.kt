@@ -7,7 +7,7 @@ fun <T> ApplicationCall.publish(exchange: String, routingKey: String, props: AMQ
     application.attributes[RabbitMQ.RabbitMQKey].publish(exchange, routingKey, props, body)
 }
 
-fun <T> RabbitMQ.publish(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) {
+fun <T> RabbitMQInstance.publish(exchange: String, routingKey: String, props: AMQP.BasicProperties?, body: T) {
     withChannel {
         val bytes = serialize(body)
 
