@@ -6,12 +6,12 @@ import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.withApplication
-import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.verify
 import io.mockk.verifyOrder
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import java.util.concurrent.ThreadPoolExecutor
@@ -64,7 +64,7 @@ class ShutdownTest : IntegrationTest() {
     }
 
     @Test
-    fun `should throw on shutdown with long running operation`() {
+    fun `should shutdown with long running operation`() {
         val logger = mockk<Logger>(relaxUnitFun = true)
         val testValue = "test"
         val convertedBody = jacksonObjectMapper().writeValueAsBytes(testValue)
@@ -101,8 +101,8 @@ class ShutdownTest : IntegrationTest() {
         verify(exactly = 0) {
             logger.info("acked")
         }
-        withTestApplication({ testModule(rabbit.host, rabbit.amqpPort) }) {
-            verifyMessages("queue", "routingKey", listOf("test"))
-        }
+
+        val output = rabbit.execInContainer("rabbitmqctl", "list_queues", "name", "messages_unacknowledged").stdout
+        assertTrue(output.endsWith("queue\t1\n"))
     }
 }
