@@ -19,7 +19,7 @@ open class IntegrationTest {
 
         withChannel {
             while (true) {
-                val response = basicGet(queue, true) ?: break
+                val response = basicGet(queue, false) ?: break
 
                 val envelope = response.envelope
 

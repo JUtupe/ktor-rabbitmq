@@ -59,6 +59,7 @@ class PublishTest : IntegrationTest() {
             handleRequest(HttpMethod.Get, "/test")
 
             // then
+
             verifyMessages(queue, routingKey, listOf("{\"key\":\"value2\"}"))
         }
 }

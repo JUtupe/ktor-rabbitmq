@@ -10,6 +10,7 @@ class RabbitMQConfiguration private constructor() {
 
     lateinit var uri: String
     var connectionName: String? = null
+    var shutdownTimeout: Long = 10_000L
     var logger: Logger? = null
         private set
 

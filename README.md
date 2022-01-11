@@ -11,6 +11,7 @@ Ktor RabbitMQ feature
 install(RabbitMQ) {
     uri = "amqp://guest:guest@localhost:5672"
     connectionName = "Connection name"
+    shutdownTimeout = 4000L
 
     //serialize and deserialize functions are required
     serialize { jacksonObjectMapper().writeValueAsBytes(it) }
