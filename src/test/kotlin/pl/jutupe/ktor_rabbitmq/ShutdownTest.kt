@@ -7,7 +7,11 @@ import io.ktor.application.log
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.withApplication
 import io.ktor.server.testing.withTestApplication
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkConstructor
+import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import java.util.concurrent.ThreadPoolExecutor
@@ -43,7 +47,7 @@ class ShutdownTest : IntegrationTest() {
         mockkConstructor(ThreadPoolExecutor::class)
         every { anyConstructed<ThreadPoolExecutor>().awaitTermination(SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS) } returns true
 
-        withApplication( createTestEnvironment { this.log = logger } ) {
+        withApplication(createTestEnvironment { this.log = logger }) {
             // given
             application.apply {
                 testModule(rabbit.host, rabbit.amqpPort)

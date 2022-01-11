@@ -15,7 +15,7 @@ import org.slf4j.Logger
 
 class RabbitMQ(
     val configuration: RabbitMQConfiguration
-): Closeable {
+) : Closeable {
 
     val logger: Logger? = configuration.logger
 
