@@ -52,20 +52,22 @@ class InitializeTest : IntegrationTest() {
     fun `should support passing pre-initialized instance of RabbitMQ`(): Unit =
         withTestApplication({
             install(RabbitMQ) {
-                rabbitMQInstance = RabbitMQInstance(RabbitMQConfiguration.create()
-                    .apply {
-                        uri = "amqp://guest:guest@${rabbit.host}:${rabbit.amqpPort}"
-                        connectionName = "Connection name"
+                rabbitMQInstance = RabbitMQInstance(
+                    RabbitMQConfiguration.create()
+                        .apply {
+                            uri = "amqp://guest:guest@${rabbit.host}:${rabbit.amqpPort}"
+                            connectionName = "Connection name"
 
-                        serialize { jacksonObjectMapper().writeValueAsBytes(it) }
-                        deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
+                            serialize { jacksonObjectMapper().writeValueAsBytes(it) }
+                            deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
 
-                        initialize {
-                            exchangeDeclare("exchange", "direct", true)
-                            queueDeclare("queue", true, false, false, emptyMap())
-                            queueBind("queue", "exchange", "routingKey")
+                            initialize {
+                                exchangeDeclare("exchange", "direct", true)
+                                queueDeclare("queue", true, false, false, emptyMap())
+                                queueBind("queue", "exchange", "routingKey")
+                            }
                         }
-                    })
+                )
             }
         }) {
             // when

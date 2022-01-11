@@ -31,5 +31,4 @@ class RabbitMQInstance(
 
     fun <T> serialize(body: T): ByteArray =
         configuration.serializeBlock.invoke(body!!)
-
 }
