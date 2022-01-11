@@ -1,7 +1,7 @@
 # ktor-rabbitmq
 [![](https://jitpack.io/v/JUtupe/ktor-rabbitmq.svg)](https://jitpack.io/#JUtupe/ktor-rabbitmq)
 
-Ktor RabbitMQ feature
+## Installing Ktor RabbitMQ feature
 
 `implementation "com.github.JUtupe:ktor-rabbitmq:$ktor_rabbitmq_feature"`
 
@@ -50,5 +50,29 @@ rabbitConsumer {
         // We can omit 'this' part
         this.ack(multiple = false)
     }
+}
+```
+
+## Passing pre-initialized RabbitMQ instance
+
+In case you need to initialize RabbitMQ prior to starting it (e. g. to kickstart your DI injection), you
+can pass pre-created RabbitMQ instance to the plugin:
+
+```kotlin
+install(RabbitMQ) {
+    rabbitMQInstance = RabbitMQInstance(RabbitMQConfiguration.create()
+        .apply {
+            uri = "amqp://guest:guest@${rabbit.host}:${rabbit.amqpPort}"
+            connectionName = "Connection name"
+
+            serialize { jacksonObjectMapper().writeValueAsBytes(it) }
+            deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
+
+            initialize {
+                exchangeDeclare("exchange", "direct", true)
+                queueDeclare("queue", true, false, false, emptyMap())
+                queueBind("queue", "exchange", "routingKey")
+            }
+        })
 }
 ```

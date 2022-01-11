@@ -54,6 +54,48 @@ class ConsumerTest : IntegrationTest() {
     }
 
     @Test
+    fun `should consume message when published using precreated RabbitMQ`() {
+        val consumer = mockk<ConsumerScope.(TestObject) -> Unit>()
+
+        withTestApplication({
+            install(RabbitMQ) {
+                rabbitMQInstance = RabbitMQInstance(
+                    RabbitMQConfiguration.create()
+                        .apply {
+                            uri = "amqp://guest:guest@${rabbit.host}:${rabbit.amqpPort}"
+                            connectionName = "Connection name"
+
+                            serialize { jacksonObjectMapper().writeValueAsBytes(it) }
+                            deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
+
+                            initialize {
+                                exchangeDeclare("exchange", "direct", true)
+                                queueDeclare("queue", true, false, false, emptyMap())
+                                queueBind("queue", "exchange", "routingKey")
+                            }
+                        }
+                )
+            }
+
+            rabbitConsumer {
+                consume("queue", true, rabbitDeliverCallback = consumer)
+            }
+        }) {
+            // given
+            val body = TestObject("value")
+            val convertedBody = jacksonObjectMapper().writeValueAsBytes(body)
+
+            // when
+            withChannel {
+                basicPublish("exchange", "routingKey", null, convertedBody)
+            }
+
+            // then
+            verify { consumer.invoke(any(), eq(body)) }
+        }
+    }
+
+    @Test
     fun `should log error when invalid body published`() {
         val consumer = mockk<ConsumerScope.(TestObject) -> Unit>()
         val logger = mockk<Logger>(relaxUnitFun = true)

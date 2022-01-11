@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
 class RabbitMQConfiguration private constructor() {
 
     lateinit var uri: String
+    var rabbitMQInstance: RabbitMQInstance? = null
     var connectionName: String? = null
     var logger: Logger? = null
         private set

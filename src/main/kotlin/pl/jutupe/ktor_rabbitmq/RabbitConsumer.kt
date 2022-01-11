@@ -6,11 +6,11 @@ import io.ktor.application.feature
 import io.ktor.util.pipeline.ContextDsl
 
 @ContextDsl
-fun Application.rabbitConsumer(configuration: RabbitMQ.() -> Unit): RabbitMQ =
+fun Application.rabbitConsumer(configuration: RabbitMQInstance.() -> Unit): RabbitMQInstance =
     feature(RabbitMQ).apply(configuration)
 
 @ContextDsl
-inline fun <reified T> RabbitMQ.consume(
+inline fun <reified T> RabbitMQInstance.consume(
     queue: String,
     autoAck: Boolean = true,
     basicQos: Int? = null,
