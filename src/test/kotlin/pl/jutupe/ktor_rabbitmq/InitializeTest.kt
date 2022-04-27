@@ -1,8 +1,9 @@
 package pl.jutupe.ktor_rabbitmq
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.application.*
-import io.ktor.server.testing.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.testing.testApplication
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -28,52 +29,62 @@ class InitializeTest : IntegrationTest() {
 
     @Test
     fun `should create queue when declared in initialize block`(): Unit =
-        withTestApplication({ testModule(rabbit.host, rabbit.amqpPort) }) {
-            // when
-            assertDoesNotThrow {
-                withChannel {
-                    basicGet("queue", true)
+        testApplication {
+            application {
+                testModule(rabbit.host, rabbit.amqpPort)
+
+                // when
+                assertDoesNotThrow {
+                    withChannel {
+                        basicGet("queue", true)
+                    }
                 }
             }
         }
 
     @Test
     fun `should throw when queue not created in initialize block`(): Unit =
-        withTestApplication({ testModule(rabbit.host, rabbit.amqpPort) }) {
-            // when
-            assertThrows<IOException> {
-                withChannel {
-                    basicGet("queue1", true)
+        testApplication{
+            application {
+                testModule(rabbit.host, rabbit.amqpPort)
+
+                // when
+                assertThrows<IOException> {
+                    withChannel {
+                        basicGet("queue1", true)
+                    }
                 }
             }
         }
 
     @Test
     fun `should support passing pre-initialized instance of RabbitMQ`(): Unit =
-        withTestApplication({
-            install(RabbitMQ) {
-                rabbitMQInstance = RabbitMQInstance(
-                    RabbitMQConfiguration.create()
-                        .apply {
-                            uri = "amqp://guest:guest@${rabbit.host}:${rabbit.amqpPort}"
-                            connectionName = "Connection name"
+        testApplication {
+            application {
+                install(RabbitMQ) {
+                    rabbitMQInstance = RabbitMQInstance(
+                        RabbitMQConfiguration.create()
+                            .apply {
+                                uri = "amqp://guest:guest@${rabbit.host}:${rabbit.amqpPort}"
+                                connectionName = "Connection name"
 
-                            serialize { jacksonObjectMapper().writeValueAsBytes(it) }
-                            deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
+                                serialize { jacksonObjectMapper().writeValueAsBytes(it) }
+                                deserialize { bytes, type -> jacksonObjectMapper().readValue(bytes, type.javaObjectType) }
 
-                            initialize {
-                                exchangeDeclare("exchange", "direct", true)
-                                queueDeclare("queue", true, false, false, emptyMap())
-                                queueBind("queue", "exchange", "routingKey")
+                                initialize {
+                                    exchangeDeclare("exchange", "direct", true)
+                                    queueDeclare("queue", true, false, false, emptyMap())
+                                    queueBind("queue", "exchange", "routingKey")
+                                }
                             }
-                        }
-                )
-            }
-        }) {
-            // when
-            assertDoesNotThrow {
-                withChannel {
-                    basicGet("queue", true)
+                    )
+                }
+
+                // when
+                assertDoesNotThrow {
+                    withChannel {
+                        basicGet("queue", true)
+                    }
                 }
             }
         }

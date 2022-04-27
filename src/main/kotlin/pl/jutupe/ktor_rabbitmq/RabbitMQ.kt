@@ -1,12 +1,12 @@
 package pl.jutupe.ktor_rabbitmq
 
-import io.ktor.application.Application
-import io.ktor.application.ApplicationFeature
+import io.ktor.server.application.Application
+import io.ktor.server.application.BaseApplicationPlugin
 import io.ktor.util.AttributeKey
 
 class RabbitMQ {
 
-    companion object Feature : ApplicationFeature<Application, RabbitMQConfiguration, RabbitMQInstance> {
+    companion object Feature : BaseApplicationPlugin<Application, RabbitMQConfiguration, RabbitMQInstance> {
 
         val RabbitMQKey = AttributeKey<RabbitMQInstance>("RabbitMQ")
 

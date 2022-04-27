@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.5.31"
+    id "org.jetbrains.kotlin.jvm" version "1.6.21"
     id "maven-publish"
 }
 
@@ -8,7 +8,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'pl.jutupe'
             artifactId = 'ktor_rabbitmq'
-            version = '0.3.0'
+            version = '1.0.0'
 
             from components.java
         }
@@ -16,14 +16,14 @@ publishing {
 }
 
 group "pl.jutupe"
-version "0.3.0"
+version "1.0.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21'
 
     // ktor
     implementation "io.ktor:ktor-server-core:$ktor_version"

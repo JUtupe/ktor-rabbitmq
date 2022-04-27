@@ -2,9 +2,9 @@ package pl.jutupe.ktor_rabbitmq
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.rabbitmq.client.MessageProperties
-import io.ktor.application.Application
-import io.ktor.application.install
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.testing.testApplication
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -48,32 +48,34 @@ class WorkQueueTest : IntegrationTest() {
         val consumer2 = TestConsumer()
         val consumer3 = TestConsumer()
 
-        withTestApplication({
-            testModule(rabbit.host, rabbit.amqpPort)
+        testApplication {
+            application {
+                testModule(rabbit.host, rabbit.amqpPort)
 
-            rabbitConsumer {
-                consume<TestTask>("workQueue", false, 1) { body ->
-                    consumer1.consume(body, this)
+                rabbitConsumer {
+                    consume<TestTask>("workQueue", false, 1) { body ->
+                        consumer1.consume(body, this)
+                    }
+
+                    consume<TestTask>("workQueue", false, 1) { body ->
+                        consumer2.consume(body, this)
+                    }
+
+                    consume<TestTask>("workQueue", false, 1) { body ->
+                        consumer3.consume(body, this)
+                    }
                 }
 
-                consume<TestTask>("workQueue", false, 1) { body ->
-                    consumer2.consume(body, this)
-                }
-
-                consume<TestTask>("workQueue", false, 1) { body ->
-                    consumer3.consume(body, this)
-                }
-            }
-        }) {
-            // when
-            withChannel {
-                repeat(times = 6) { index ->
-                    basicPublish(
-                        "exchange",
-                        "routingKey",
-                        MessageProperties.PERSISTENT_TEXT_PLAIN,
-                        getPayload("Task$index")
-                    )
+                // when
+                withChannel {
+                    repeat(times = 6) { index ->
+                        basicPublish(
+                            "exchange",
+                            "routingKey",
+                            MessageProperties.PERSISTENT_TEXT_PLAIN,
+                            getPayload("Task$index")
+                        )
+                    }
                 }
             }
         }
