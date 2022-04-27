@@ -1,8 +1,8 @@
 package pl.jutupe.ktor_rabbitmq
 
 import com.rabbitmq.client.Channel
-import io.ktor.application.Application
-import io.ktor.application.log
+import io.ktor.server.application.Application
+import io.ktor.server.application.log
 import org.slf4j.Logger
 import kotlin.reflect.KClass
 

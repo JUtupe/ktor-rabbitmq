@@ -1,15 +1,14 @@
 package pl.jutupe.ktor_rabbitmq
 
 import com.rabbitmq.client.*
-import io.ktor.application.Application
-import io.ktor.application.feature
-import io.ktor.util.pipeline.ContextDsl
+import io.ktor.server.application.Application
+import io.ktor.server.application.plugin
 
-@ContextDsl
+@RabbitMQMarker
 fun Application.rabbitConsumer(configuration: RabbitMQInstance.() -> Unit): RabbitMQInstance =
-    feature(RabbitMQ).apply(configuration)
+    plugin(RabbitMQ).apply(configuration)
 
-@ContextDsl
+@RabbitMQMarker
 inline fun <reified T> RabbitMQInstance.consume(
     queue: String,
     autoAck: Boolean = true,
