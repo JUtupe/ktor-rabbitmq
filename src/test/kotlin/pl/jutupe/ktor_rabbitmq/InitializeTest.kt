@@ -44,7 +44,7 @@ class InitializeTest : IntegrationTest() {
 
     @Test
     fun `should throw when queue not created in initialize block`(): Unit =
-        testApplication{
+        testApplication {
             application {
                 testModule(rabbit.host, rabbit.amqpPort)
 
