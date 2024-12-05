@@ -1,6 +1,9 @@
 # ktor-rabbitmq
 
-[![](https://jitpack.io/v/JUtupe/ktor-rabbitmq.svg)](https://jitpack.io/#JUtupe/ktor-rabbitmq)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.1.0-green.svg?logo=kotlin)](http://kotlinlang.org)
+![GitHub Release](https://img.shields.io/github/v/release/jutupe/ktor-rabbitmq)
+![GitHub License](https://img.shields.io/github/license/jutupe/ktor-rabbitmq)
+
 
 ## Show me the code!
 
