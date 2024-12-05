@@ -26,4 +26,4 @@ jobs:
           java-version: 8
 
       - name: Gradle test
-        run: ./gradlew test
+        run: bash ./gradlew test
