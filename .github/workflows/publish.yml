@@ -23,10 +23,10 @@ jobs:
           java-version: 8
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: bash ./gradlew build
 
       - name: Publish
-        run: ./gradlew publish
+        run: bash ./gradlew publish
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
