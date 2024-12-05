@@ -1,15 +1,23 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.6.21"
+    id "org.jetbrains.kotlin.jvm" version "2.1.0"
     id "maven-publish"
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = 'pl.jutupe'
-            artifactId = 'ktor_rabbitmq'
-            version = '1.0.0'
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/jutupe/ktor-rabbitmq")
 
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+
+    publications {
+        gpr(MavenPublication) {
             from components.java
         }
     }
@@ -23,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0'
 
     // ktor
     implementation "io.ktor:ktor-server-core:$ktor_version"
